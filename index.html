@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu de mots</title>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Segoe UI',sans-serif;
+}
+
+body{
+background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+}
+
+.game-container{
+width:95%;
+max-width:500px;
+height:95vh;
+background:rgba(0,0,0,0.6);
+border-radius:20px;
+padding:20px;
+position:relative;
+overflow:hidden;
+box-shadow:0 0 40px rgba(0,0,0,0.8);
+}
+
+h1{
+text-align:center;
+margin-bottom:10px;
+font-size:22px;
+letter-spacing:2px;
+color:gold;
+}
+.jeu{
+
+text-align:center; 
+width:100%;
+
+}
+
+.score-board{
+display:flex;
+justify-content:space-between;
+font-size:14px;
+margin-bottom:10px;
+}
+
+.word{
+position:absolute;
+top:0;
+left:50%;
+transform:translateX(-50%);
+font-size:22px;
+background:rgba(255,255,255,0.1);
+padding:8px 15px;
+border-radius:10px;
+border:1px solid gold;
+animation:fall linear forwards;
+}
+
+@keyframes fall{
+from{top:0;}
+to{top:80%;}
+}
+
+.buttons{
+width:100%;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:6px;
+margin-top:auto
+padding-top:10px;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+background:gold;
+color:black;
+font-weight:bold;
+cursor:pointer;
+transition:0.3s;
+font-size:12px;
+}
+
+button:hover{
+background:white;
+}
+
+.start-btn{
+width:100%;
+margin-top:5px;
+background:#00ffcc;
+}
+
+.game-over{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:black;
+padding:20px;
+border-radius:15px;
+display:none;
+text-align:center;
+}
+
+@media(max-width:600px){
+.word{font-size:18px;}
+button{font-size:10px;padding:8px;}
+}
+</style>
+</head>
+<body>
+
+<div class="game-container">
+<h1>Groupe Scolaire Taghilast, Unité Hadria</h1>
+<h2 class="jeu"> Défi du jeu : Identifier la catégorie grammaticale du mot en chute </h2>
+
+
+<div class="score-board">
+<div>Score: <span id="score">0</span></div>
+<div>Niveau: <span id="level">1</span></div>
+<div>Meilleur: <span id="bestScore">0</span></div>
+</div>
+
+<div id="gameArea"></div>
+
+<div class="buttons">
+<button onclick="checkAnswer('nom')">Nom</button>
+<button onclick="checkAnswer('verbe')">Verbe</button>
+<button onclick="checkAnswer('adjectif')">Adjectif</button>
+<button onclick="checkAnswer('adverbe')">Adverbe</button>
+<button onclick="checkAnswer('preposition')">Préposition</button>
+<button class="start-btn" onclick="startGame()">Commencer</button>
+</div>
+
+<div class="game-over" id="gameOver">
+<h2> Fin ! </h2>
+<p>Score: <span id="finalScore"></span></p>
+<button onclick="restartGame()">Rejouer</button>
+</div>
+
+</div>
+
+<script>
+
+
+const words = {
+nom:[
+"chat","chien","maison","voiture","école","livre","stylo","table","ordinateur","fenêtre",
+"porte","ville","route","arbre","fleur","ciel","mer","montagne","ami","professeur",
+"enfant","soleil","lune","temps","travail","argent","musique","film","histoire","science",
+"pays","langue","bureau","classe","père","mère","frère","soeur","roi","reine","abri","absence","accident",
+"activité","adresse","affaire","âge","air","aéroport","album", "aliment","allée","amour","animal","année","appartement","appareil","arrière","article","atelier",
+"attention","auteur","avenir","aventure","bagage","balcon","banque","bar","bâtiment","beauté",
+"besoin","bibliothèque","bijou","biscuit","bois","bonheur","bord","boutique","branche","bruit",
+"bureaucratie","cabinet","cadeau","campagne","canal","capitale","caractère","carte","cause","centre",
+"cerveau","chaleur","chance","chanson","charge","chemin","choix","chose","chute","cinéma",
+"circulation","client","climat","coin","colère","commerce","compagnie","concours","condition","confiance",
+"connaissance","conseil","conversation","copain","corps","courage","cour","cours","coût","couleur",
+"culture","danger","décision","défaut","déjeuner","demande","dent","départ","désir","dessin",
+"détail","devoir","dialogue","différence","direction","discours","distance","doigt","domaine","douleur",
+"droit","échange","économie","effet","effort","électricité","élément","emploi","énergie","environnement",
+"époque","équipe","erreur","espace","espoir","essai","étage","état","événement","exemple",
+"expérience","famille","faute","fête","feuille","forêt","force","forme","geste","gouvernement",
+"guerre","habitude","hasard","hiver","honneur","hôtel","idée","image","industrie","information",
+"intérêt","intérieur","jeu","journal","justice","kilomètre","lac","lettre","liberté","ligne",
+"lumière","machine","magasin","maladie","marché","matériel","matière","mémoire","message","minute",
+"modèle","moment","monde","mouvement","nature","niveau","nombre","objet","occasion","odeur",
+"oeil","opinion","organisation","outil","ouverture","page","pain","parc","partie","passage",
+"pensée","personne","phrase","pièce","pierre","place","plaisir","plan","pluie","poids",
+"point","police","population","position","possibilité","pouvoir","présence","pression","prix","problème",
+"projet","promesse","protection","qualité","quartier","question","raison","réalité","réponse","résultat",
+"rêve","richesse","rire","risque","rivière","robe","rôle","saison","salon","santé",
+"secret","sécurité","sens","service","signe","silence","situation","société","solution","sommet",
+"son","souvenir","spectacle","sport","station","style","succès","surface","système","tâche",
+"taille","téléphone","terrain","terre","théorie","titre","tour","tradition","train","travailleur",
+"univers","usage","valeur","vérité","victime","vie","visage","vitesse","voisin","voyage"
+],
+
+verbe:[
+"manger","parler","aller","venir","faire","prendre","donner","voir","savoir","vouloir",
+"pouvoir","aimer","détester","travailler","jouer","marcher","courir","écrire","lire","ouvrir",
+"fermer","chercher","trouver","penser","croire","attendre","écouter","regarder","changer","utiliser",
+"apprendre","enseigner","habiter","voyager","dormir","vivre","connaître","comprendre","répondre","gagner", "accepter","accompagner","acheter","ajouter","améliorer","annoncer","apporter","arrêter","arriver","assurer",
+"attaquer","augmenter","avancer","baisser","bâtir","boire","bouger","cacher","casser","changer",
+"choisir","commencer","comparer","compléter","continuer","corriger","couper","créer","crier","décider",
+"déclarer","découvrir","décrire","défendre","demander","démontrer","déplacer","détruire","développer","devenir",
+"diffuser","diriger","discuter","disparaître","donner","douter","échanger","éclairer","écouter","élever",
+"embrasser","empêcher","emporter","encourager","enlever","entendre","entrer","envoyer","espérer","essayer",
+"estimer","éviter","exister","expliquer","exprimer","fabriquer","fêter","finir","former","frapper",
+"garder","gérer","glisser","habiller","imaginer","indiquer","informer","insister","installer","inviter",
+"jouer","juger","laisser","lancer","laver","lier","livrer","maintenir","manquer","mélanger",
+"mesurer","montrer","nager","naître","noter","obtenir","offrir","organiser","oser","oublier",
+"ouvrir","parer","partager","passer","payer","penser","perdre","permettre","placer","plaire",
+"porter","poser","pousser","préparer","présenter","proposer","protéger","quitter","raconter","ramener",
+"recevoir","reconnaître","réduire","réfléchir","refuser","regretter","remarquer","remplacer","rencontrer","rendre",
+"répéter","répondre","réussir","revenir","rire","rompre","sauter","sauver","sembler","sentir",
+"servir","signer","sortir","souffrir","souhaiter","suivre","supporter","surprendre","téléphoner","tenir",
+"terminer","tirer","tomber","tourner","toucher","traduire","transformer","traverser","utiliser","valoir",
+"vérifier","visiter","voler","voyager"
+],
+
+adjectif:[
+"grand","petit","beau","joli","rapide","lent","heureux","triste","important","intelligent",
+"fort","faible","nouveau","ancien","jeune","vieux","facile","difficile","clair","sombre",
+"chaud","froid","propre","sale","riche","pauvre","gentil","méchant","calme","bruyant",
+"long","court","simple","complexe","fier","sérieux","timide","courageux","dangereux","utile", "agréable","actif","adorable","ambitieux","ancien","amusant","anxieux","applicable","attentif","authentique",
+"bizarre","blanc","bleu","bon","brave","brillant","calme","capable","certain","cher",
+"clair","coloré","confiant","content","correct","créatif","curieux","dangereux","délicieux","différent",
+"digne","direct","doux","drôle","dur","efficace","élégant","énorme","entier","étrange",
+"exact","excellent","faible","faux","fidèle","fragile","frais","gai","génial","grave",
+"gris","honnête","humain","immense","important","impossible","incroyable","indépendant","intéressant","jaloux",
+"large","libre","logique","loyal","magnifique","maigre","malin","mauvais","meilleur","moderne",
+"mondial","naturel","nécessaire","nerveux","normal","nouvel","obligatoire","original","patient","parfait",
+"petit","plein","possible","précieux","principal","prêt","profond","propre","prudent","public",
+"rare","réel","récent","responsable","riche","rond","rouge","sain","satisfait","sec",
+"sensible","simple","sincère","solide","spécial","stable","strict","stupide","supérieur","sympathique",
+"tranquille","unique","utile","valable","vif","vivant","vrai","vulgaire"
+],
+
+adverbe:[
+"rapidement","lentement","bien","mal","toujours","jamais","souvent","rarement","ici","là",
+"partout","hier","aujourd'hui","demain","tôt","tard","vite","ensemble","seulement","déjà",
+"encore","presque","beaucoup","peu","assez","vraiment","certainement","probablement","heureusement","malheureusement", "absolument","actuellement","ainsi","ailleurs","alors","apparemment","assez","auparavant","aussi","autant",
+"automatiquement","autrefois","beaucoup","bien","bientôt","brusquement","calmement","clairement","complètement","continuellement",
+"correctement","davantage","définitivement","déjà","doucement","également","encore","énormément","ensuite","entièrement",
+"environ","éternellement","évidemment","exactement","exceptionnellement","facilement","finalement","fortement","franchement","généralement",
+"gratuitement","heureusement","immédiatement","intérieurement","justement","largement","lentement","librement","logiquement","longtemps",
+"malheureusement","mieux","naturellement","normalement","notamment","obligatoirement","parfaitement","particulièrement","peut-être","pleinement",
+"poliment","presque","probablement","profondément","prudemment","rapidement","rarement","récemment","régulièrement","seulement",
+"sérieusement","simplement","sincèrement","soudainement","souvent","spécialement","suffisamment","totalement","toujours","tranquillement",
+"très","trop","uniquement","vraiment"
+],
+
+preposition:[
+"à","de","dans","sur","sous","avec","sans","chez","pour","par",
+"entre","contre","vers","avant","après","depuis","pendant","malgré","selon","jusqu'à"
+]
+};
+
+// ===================================================
+
+let currentWord = null;
+let currentType = null;
+let score = 0;
+let level = 1;
+let gameActive = false;
+let fallDuration = 8000;
+let timer = null;
+
+let bestScore = localStorage.getItem("bestScore") || 0;
+document.getElementById("bestScore").innerText = bestScore;
+
+function randomWord(){
+const types = Object.keys(words);
+const randomType = types[Math.floor(Math.random()*types.length)];
+const wordList = words[randomType];
+const word = wordList[Math.floor(Math.random()*wordList.length)];
+return {word,type:randomType};
+}
+
+function createWord(){
+if(!gameActive) return;
+
+const data = randomWord();
+currentWord = data.word;
+currentType = data.type;
+
+const wordElement = document.createElement("div");
+wordElement.classList.add("word");
+wordElement.innerText = currentWord;
+wordElement.style.animationDuration = fallDuration+"ms";
+
+document.getElementById("gameArea").innerHTML="";
+document.getElementById("gameArea").appendChild(wordElement);
+
+if(timer){ 
+clearTimeout(timer); 
+}
+timer = setTimeout(()=>{
+if(gameActive){
+endGame();
+}
+}, fallDuration);}
+
+function checkAnswer(type){
+if(!gameActive) return;
+
+if(type===currentType){
+clearTimeout(timer);
+score++;
+level++;
+fallDuration = Math.max(4500,fallDuration-40);
+updateScore();
+createWord();
+}else{
+endGame();
+}
+}
+
+function updateScore(){
+document.getElementById("score").innerText = score;
+document.getElementById("level").innerText = level;
+}
+
+function startGame(){
+if(gameActive) return;
+gameActive = true;
+score = 0;
+level = 1;
+fallDuration = 5000;
+updateScore();
+createWord();
+}
+
+function endGame(){
+gameActive = false;
+document.getElementById("finalScore").innerText = score;
+
+if(score>bestScore){
+bestScore = score;
+localStorage.setItem("bestScore",score);
+document.getElementById("bestScore").innerText = score;
+}
+
+document.getElementById("gameOver").style.display="block";
+}
+
+function restartGame(){
+document.getElementById("gameOver").style.display="none";
+startGame();
+}
+
+</script>
+
+</body>
+</html>
